@@ -11,11 +11,11 @@ typedef struct header
 	struct  header* next;
 } header_t;
 
-static header_t* start; // start if our list in heap 
-static header_t* end;	// end of list in heap
+static header_t *start; // start if our list in heap 
+static header_t *end;	// end of list in heap
 
-header_t* get_free_block(unsigned size); // Looking through list for the block of certain size
-void* vp_malloc(unsigned size); // Our actual memory allocatr
+header_t *get_free_block(unsigned size); // Looking through list for the block of certain size
+void *vp_malloc(unsigned size); // Our actual memory allocatr
 void vp_free(void* block);	 // Free given block in heap
 
 int main(int argc, char *argv[])
@@ -30,9 +30,9 @@ int main(int argc, char *argv[])
 	printf("Adress %ld memory %d\n", b, *b);
 }
 
-header_t* get_free_block(unsigned size)
+header_t *get_free_block(unsigned size)
 {
-	header_t* curr = start;
+	header_t *curr = start;
 
 	while (curr)
 	{
@@ -48,8 +48,8 @@ header_t* get_free_block(unsigned size)
 
 void* vp_malloc(unsigned size)
 {
-	header_t* header;
-	void* block;
+	header_t *header;
+	void *block;
 	unsigned total_size;	
 
 	if (!size)	// if the given size is zero
@@ -90,11 +90,11 @@ void* vp_malloc(unsigned size)
 	return (void*)(header + 1);
 }
 
-void vp_free(void* block)
+void vp_free(void *block)
 {
-	header_t* header;
-	header_t* temp;
-	void* program_break;
+	header_t *header;
+	header_t *temp;
+	void *program_break;
 
 	if (!block) // In case block is NULL
 	{
