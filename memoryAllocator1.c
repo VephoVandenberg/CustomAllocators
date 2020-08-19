@@ -8,7 +8,7 @@ typedef struct header
 {
 	unsigned size;
 	unsigned is_free;
-	struct  header* next;
+	struct  header *next;
 } header_t;
 
 static header_t *start; // start if our list in heap 
@@ -16,7 +16,7 @@ static header_t *end;	// end of list in heap
 
 header_t *get_free_block(unsigned size); // Looking through list for the block of certain size
 void *vp_malloc(unsigned size); // Our actual memory allocatr
-void vp_free(void* block);	 // Free given block in heap
+void vp_free(void *block);	 // Free given block in heap
 
 int main(int argc, char *argv[])
 {
