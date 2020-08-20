@@ -37,9 +37,7 @@ header_t *get_free_block(unsigned size)
 	while (curr)
 	{
 		if (curr->size >= size && curr->is_free)
-		{
 			return curr;
-		}
 		curr = curr->next;
 	}
 
@@ -53,9 +51,8 @@ void* vp_malloc(unsigned size)
 	unsigned total_size;	
 
 	if (!size)	// if the given size is zero
-	{
 		return NULL;
-	}
+	
 
 	header = get_free_block(size); // first of all looking for a free block
 	if (header)					   // if we find such we just set is_free to zero
@@ -68,9 +65,8 @@ void* vp_malloc(unsigned size)
 	block = sbrk(total_size);
 
 	if (block == (void*)-1) // if something went wrong
-	{
 		return NULL;
-	}
+	
 
 	header = block;
 	header->is_free = 0;
@@ -78,14 +74,11 @@ void* vp_malloc(unsigned size)
 	header->next = NULL;
 
 	if (!start) // if the list we free we set the first element to the start
-	{
 		start = header;
-	}
+	
 
 	if (end) // if the end already exists
-	{
 		end->next = header; // we just tie to the end our new allocated block of memory
-	}
 
 	return (void*)(header + 1);
 }
@@ -97,9 +90,8 @@ void vp_free(void *block)
 	void *program_break;
 
 	if (!block) // In case block is NULL
-	{
 		return;
-	}
+	
 
 	program_break = sbrk(0);
 	header = (header_t*)(block - 1);
@@ -107,9 +99,7 @@ void vp_free(void *block)
 	if ((char*)block + header->size == program_break)
 	{
 		if (start == end)
-		{
 			start = end = NULL;
-		}
 		else
 		{
 			temp = header;
@@ -125,7 +115,7 @@ void vp_free(void *block)
 			}
 		}
 		sbrk(0 - sizeof(header_t) - header->size);
-		return;
 	}
-	header->is_free = 1;
+	else
+		header->is_free = 1;
 }
