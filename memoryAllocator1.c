@@ -102,7 +102,7 @@ void vp_free(void *block)
 			start = end = NULL;
 		else
 		{
-			temp = header;
+			temp = start;
 			while(temp)
 			{
 				if (temp->next == end)
