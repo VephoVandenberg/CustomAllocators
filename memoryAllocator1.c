@@ -105,7 +105,7 @@ void vp_free(void *block)
 			temp = header;
 			while(temp)
 			{
-				if (temp->next == NULL)
+				if (temp->next == end)
 				{
 					temp->next = NULL;
 					end = temp;
