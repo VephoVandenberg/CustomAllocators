@@ -17,6 +17,7 @@ void *vv_malloc(size_t size);
 void vv_free(void *memory_block); // TODO: add fusion
 void split_memory(node_t *block, size_t size);
 void *realloc(void *memory_block, size_t size); // TODO: implement later
+void *calloc(size_t number_of_elems, size_t size);
 node_t *fusion(node_t *block);  //TODO: implement later
 node_t *give_more_memory(size_t size);
 node_t *find_free_memory(size_t size);
@@ -110,9 +111,33 @@ void *vv_malloc(size_t size)
     return (void *) (block + 1);    
 }
 
+node_t *fusion(node_t *block)
+{
+    if (block->next && block->next->is_free)
+    {
+        block->size += BLOCK_SIZE + block->next->size;
+        block->next = block->next->next;
+    }
+    return block;
+}
+
+void *calloc(size_t number_of_elems, size_t size)
+{
+    size_t *new, new_size;
+    unsigned i;
+
+    new_size = number_of_elems * size;
+    new = vv_malloc(new_size);
+    if (new)
+        for (i = 0; i < new_size; i++)
+            new[i] = 0;
+    return new;
+}
+
 void *realloc(void *memory_block, size_t size)
 {
-    if (!ptr)
+    /*
+    if (!memory_block)
         return malloc(size);
     
 
@@ -123,6 +148,7 @@ void *realloc(void *memory_block, size_t size)
         split_memory(node, size);
         return memory_block;   
     }
+    */
 }
 
 void split_memory(node_t *block, size_t size)
