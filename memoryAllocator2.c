@@ -30,7 +30,9 @@ int main(int argc, char const *argv[])
     *a = 25;
     *b = 45;
     *c = 55;
-
+    
+    vv_free(b);
+    vv_free(c);
 
     return 0;
 }
