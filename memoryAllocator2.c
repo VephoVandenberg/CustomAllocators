@@ -112,7 +112,7 @@ void *vv_malloc(size_t size)
 
 void *realloc(void *memory_block, size_t size)
 {
-    if (!memory_block)
+    if (!ptr)
         return malloc(size);
     
 
@@ -130,16 +130,15 @@ void split_memory(node_t *block, size_t size)
     if (size >= block->size)
         return;
 
-    node_t *needed = block;
     node_t *tail_block;
 
-    tail_block = needed + BLOCK_SIZE + size;
-    tail_block->size = needed->size - size;
+    tail_block = block + BLOCK_SIZE + size;
+    tail_block->size = block->size - size - BLOCK_SIZE;
     tail_block->is_free = 1;
-    tail_block->next = needed->next;
+    tail_block->next = block->next;
 
-    needed->size = size;
-    needed->next = tail_block;
+    block->size = size;
+    block->next = tail_block;
 }
 
 void vv_free(void *memory_block)
