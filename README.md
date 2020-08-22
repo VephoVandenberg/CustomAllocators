@@ -1,5 +1,5 @@
 # Custom Memory Allocators
-Here are custom memory allocators.
+Here are my custom memory allocators. I write them for educational purposes.
 Each implementation differ from another, so don't blame if one is worse than another.
 Just doing different implementations for myself.
 
