@@ -4,6 +4,8 @@ typedef struct node
 {
     size_t size;
     struct node *next;
+    void *ptr;
+    struct node *prev;
     int is_free;
 } node_t;
 
@@ -14,13 +16,15 @@ static node_t *end = NULL;
 
 
 void *vv_malloc(size_t size);
-void vv_free(void *memory_block); // TODO: add fusion
+void vv_free(void *memory_block); 
 void split_memory(node_t *block, size_t size);
-void *realloc(void *memory_block, size_t size); // TODO: implement later
-void *calloc(size_t number_of_elems, size_t size);
-node_t *fusion(node_t *block);  //TODO: implement later
+void *vv_realloc(void *memory_block, size_t size); // TODO: implement later
+void *vv_calloc(size_t number_of_elems, size_t size);
+void copy_block(node_t *source, node_t *destenation);
+node_t *fusion(node_t *block);
 node_t *give_more_memory(size_t size);
 node_t *find_free_memory(size_t size);
+int valid_addr(void *ptr);
 
 
 int main(int argc, char const *argv[])
@@ -36,7 +40,8 @@ int main(int argc, char const *argv[])
 
     vv_free(b);
     vv_free(c);
-
+    
+    int *v = vv_realloc(a, 4);
     return 0;
 }
 
@@ -104,11 +109,12 @@ void *vv_malloc(size_t size)
             if (!block) 
                 return NULL;
             end->next = block;
+            block->prev = end;
             end = block;
         }
     }
-
-    return (void *) (block + 1);    
+    block->ptr = (block + 1);
+    return block->ptr;    
 }
 
 node_t *fusion(node_t *block)
@@ -121,10 +127,10 @@ node_t *fusion(node_t *block)
     return block;
 }
 
-void *calloc(size_t number_of_elems, size_t size)
+void *vv_calloc(size_t number_of_elems, size_t size)
 {
     size_t *new, new_size;
-    unsigned i;
+    size_t i;
 
     new_size = number_of_elems * size;
     new = vv_malloc(new_size);
@@ -134,21 +140,44 @@ void *calloc(size_t number_of_elems, size_t size)
     return new;
 }
 
-void *realloc(void *memory_block, size_t size)
+void *vv_realloc(void *memory_block, size_t size)
 {
-    /*
+    size_t s;
+    node_t *old, *new;
+
+    void *new_memory_ptr;
+
     if (!memory_block)
-        return malloc(size);
-    
+        return vv_malloc(size);
 
-    node_t* node = (node_t *) memory_block - 1;
+    old = (node_t *) memory_block - 1;    
+    if (!valid_addr(memory_block))
+        return NULL;
 
-    if (node->size >= size)
+    if (old->size >= size && old->size - size >= BLOCK_SIZE)
+        split_memory(old, size);
+    else
     {
-        split_memory(node, size);
-        return memory_block;   
+        if (old->next && old->next->is_free && (old->size + old->next->size + BLOCK_SIZE >= size))
+        {
+            fusion(old);
+            if (old->size >= size && old->size - size >= BLOCK_SIZE)
+                split_memory(old, size);
+        }
+        else
+        {
+            new_memory_ptr = vv_malloc(size);
+            if (!new)
+                return NULL;
+            new = (node_t *) new_memory_ptr - 1;
+            copy_block(old, new);
+            vv_free(old);
+            return new_memory_ptr;
+        }
+        
     }
-    */
+    return memory_block;
+    
 }
 
 void split_memory(node_t *block, size_t size)
@@ -162,6 +191,7 @@ void split_memory(node_t *block, size_t size)
     tail_block->size = block->size - size - BLOCK_SIZE;
     tail_block->is_free = 1;
     tail_block->next = block->next;
+    tail_block->prev = block;
 
     block->size = size;
     block->next = tail_block;
@@ -169,6 +199,9 @@ void split_memory(node_t *block, size_t size)
 
 void vv_free(void *memory_block)
 {
+    if (!valid_addr(memory_block)) // In case the address of the memory block is not valid
+        return;
+
     node_t *temp;
     node_t *node = (node_t *) memory_block - 1;
     void *mem_chunk_break = sbrk(0);
@@ -197,6 +230,34 @@ void vv_free(void *memory_block)
     }
     else
     {
+        // fusion with previous block if possible
+        if (node->prev && node->prev->is_free)
+            node = fusion(node->prev); 
+        // then try with the next one
+        if (node->next)
+            node = fusion(node);
         node->is_free = 1;
     }
+}
+
+int valid_addr(void *p)
+{
+    node_t *block = p - BLOCK_SIZE;
+
+    if (start)
+        if ( p > start && p < sbrk(0))
+            return (p == block->ptr);
+    return 0;
+}
+
+void copy_block(node_t *source, node_t *destenation)
+{
+    size_t i;
+    char *src, *dest;
+
+    src = source->ptr;
+    dest = destenation->ptr;
+
+    for (i = 0; i < source->size && i < destenation->size; i++)
+       src[i] = dest[i];
 }
