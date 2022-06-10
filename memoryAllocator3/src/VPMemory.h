@@ -8,6 +8,8 @@ typedef struct header
 }header_t;
 
 #define HEADER_SIZE sizeof(header_t)
+#define TRUE 1
+#define FALSE 0
 
 void *VPMalloc(size_t size);
 void VPFree(void *pointer);
