@@ -57,12 +57,16 @@ void VPFree(void *pointer)
 header_t *findFreeBlock(size_t size)
 {
     header_t *current = start;
-    while (current && (current->isFree && current->size >= size))
+    while (current && (current->size >= size))
     {
+	if (current->isFree)
+	{
+	    return current;
+	}
 	current = current->next;
     }
 
-    return current;
+    return NULL;
 }
 
 header_t *requestSpace(size_t size)
