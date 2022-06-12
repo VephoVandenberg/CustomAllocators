@@ -96,7 +96,6 @@ header_t *requestSpace(size_t size)
 {
     header_t *block = sbrk(0);
     void *request = sbrk(HEADER_SIZE + size);
-
     // Failed to allocate memory
     if (request == (void*)-1)
     {
@@ -110,6 +109,10 @@ header_t *requestSpace(size_t size)
     if (!start)
     {
 	start = block;
+    }
+    if (end)
+    {
+	end->next = block;
     }
     end = block;
 
