@@ -40,6 +40,29 @@ void *VPMalloc(size_t size)
     return (block + 1);
 }
 
+{
+    if (!pointer)
+    {
+	return VPMalloc(size);
+    }
+
+    header_t *header = getMemoryHeader(pointer);
+    if (header->size >= size)
+    {
+	return pointer;
+    }
+
+    void *newMemory = VPMalloc(size);
+    if (!newMemory)
+    {
+	return NULL;
+    }
+    memcpy(newMemory, pointer, header->size);
+    VPFree(pointer);
+
+    return newMemory;
+}
+
 void VPFree(void *pointer)
 {
     if (!pointer)
