@@ -13,6 +13,7 @@ typedef struct header
 
 void *VPMalloc(size_t size);
 void *VPRealloc(size_t size, void *pointer);
+void *VPCalloc(size_t number, size_t size);
 void VPFree(void *pointer);
 
 header_t *findFreeBlock(size_t size);
