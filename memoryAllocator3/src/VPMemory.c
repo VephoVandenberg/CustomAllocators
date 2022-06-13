@@ -40,6 +40,7 @@ void *VPMalloc(size_t size)
     return (block + 1);
 }
 
+void *VPRealloc(size_t size, void *pointer)
 {
     if (!pointer)
     {
@@ -62,6 +63,14 @@ void *VPMalloc(size_t size)
 
     return newMemory;
 }
+
+void *VPCalloc(size_t number, size_t size)
+{
+    void *memory = VPMalloc(size * number);
+    memset(memory, 0, size);
+    return memory;
+}
+
 
 void VPFree(void *pointer)
 {
