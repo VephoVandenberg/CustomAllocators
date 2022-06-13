@@ -1,16 +1,28 @@
+#include <stdio.h>
 #include "VPMemory.h"
-
-
-header_t *start = NULL;
-header_t *end = NULL;
 
 header_t *getMemoryHeader(void *pointer)
 {
     if (pointer)
     {
-	return (header_t*)(pointer - 1);
+	return (header_t*)pointer - 1;
     }
     return NULL;
+}
+
+void splitMemoryBlock(header_t *header, size_t size)
+{
+    if (!header || header->size <= size)
+    {
+	return;
+    }
+    
+    header_t *newHeader = header + HEADER_SIZE + size;
+    newHeader->size = header->size - HEADER_SIZE - size;
+    newHeader->isFree = TRUE;
+    header->size = size;
+    newHeader->next = header->next;
+    header->next = newHeader;
 }
 
 void *VPMalloc(size_t size)
@@ -71,7 +83,6 @@ void *VPCalloc(size_t number, size_t size)
     return memory;
 }
 
-
 void VPFree(void *pointer)
 {
     if (!pointer)
@@ -83,6 +94,7 @@ void VPFree(void *pointer)
     if (header)
     {
 	header->isFree = TRUE;
+	pointer = NULL;
     }
 }
 
@@ -93,6 +105,7 @@ header_t *findFreeBlock(size_t size)
     {
 	if (current->isFree)
 	{
+	    splitMemoryBlock(current, size)
 	    return current;
 	}
 	current = current->next;
@@ -126,4 +139,19 @@ header_t *requestSpace(size_t size)
     end = block;
 
     return block;
+}
+
+void printList()
+{
+    header_t *current = start;
+
+    while (current)
+    {
+	printf("Current address: 0X%x\n", current);
+	printf("Next address: 0X%x\n", current->next);
+	printf("Adress of actual memory: 0X%x\n", (current + 1));
+	printf("Size of allocated memory after the  header in bytes: %d\n", current->size);
+	printf("Is this node free or not: %d\n\n", current->isFree);
+	current = current->next;
+    }
 }
