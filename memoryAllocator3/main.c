@@ -11,26 +11,30 @@ int main(int argc, char **argv)
 
 void testAllocator()
 {
+    
     int *a = VPMalloc(sizeof(int));
-    printf("Memory address is %x \n", a);
+    printf("Memory address of 'a' is 0X%x \n", a);
     *a = 35;
     printf("With value of %ld\n", *a);
     
     int *b = VPMalloc(sizeof(int));
-    printf("Memory address is %x \n", b);
+    printf("Memory address of 'b' is 0X%x \n", b);
     *b = 44;
     printf("With value of %ld\n", *b);
 
-    printf("Memory address of a is %x\n", a);
 
     short *c = VPMalloc(sizeof(short));
-    printf("Memory address is %x \n", c);
+    printf("Memory address of 'c' is 0X%x \n", c);
     *c = 35;
-    printf("With value of %d\n", *c);
+    printf("With value of %d\n\n", *c);
 
-    printf("Check if the memory remains the same\n");
-    printf("Memory address of a is %x\n", a);
-    printf("Memory address of b is %x\n", b);
+    printf("Now let's free the variable 'b'\n\n");
+    VPFree(b);
     
+    printf("Check if the memory remains the same\n");
+    printf("Memory address of a is 0X%x\n", a);
+    printf("Memory address of b is 0X%x\n", b);
+    printf("Memory address of c is 0X%x\n\n", c);
+    
+    printList();
 }
-
