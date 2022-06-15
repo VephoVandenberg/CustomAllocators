@@ -1,5 +1,9 @@
 #include <stdio.h>
+#include <string.h>
 #include "VPMemory.h"
+
+header_t *start = NULL;
+header_t *end = NULL;
 
 header_t *getMemoryHeader(void *pointer)
 {
@@ -23,6 +27,15 @@ void splitMemoryBlock(header_t *header, size_t size)
     header->size = size;
     newHeader->next = header->next;
     header->next = newHeader;
+}
+
+void fusion(header_t *header)
+{
+    if (header->next && header->next->isFree)
+    {
+	header->size += HEADER_SIZE + header->next->size;
+	header->next = header->next->next;
+    }
 }
 
 void *VPMalloc(size_t size)
@@ -91,11 +104,53 @@ void VPFree(void *pointer)
     }
 
     header_t *header = getMemoryHeader(pointer);
-    if (header)
+
+    if (header == end)
     {
-	header->isFree = TRUE;
-	pointer = NULL;
+	if (start == end)
+	{
+	    start = NULL;
+	    end = NULL;
+	}
+	else
+	{
+	    header_t *prev = start;
+	    while (prev)
+	    {
+		if (prev->next == end)
+		{
+		    prev->next = NULL;
+		    end = prev;
+		    return;
+		}
+		prev = prev->next;
+	    }
+	}
+	sbrk(0 - header->size - HEADER_SIZE);
     }
+    else
+    {
+	header_t *prev = start;
+	while(prev)
+	{
+	    if (prev->next == end)
+	    {
+		break;
+	    }
+	    prev = prev->next;
+	}
+
+	header->isFree = TRUE;
+	if (prev)
+	{
+	    fusion(prev);
+	}
+	if (header->next)
+	{
+	    fusion(header);
+	}
+    }
+   
 }
 
 header_t *findFreeBlock(size_t size)
@@ -105,7 +160,7 @@ header_t *findFreeBlock(size_t size)
     {
 	if (current->isFree)
 	{
-	    splitMemoryBlock(current, size)
+	    splitMemoryBlock(current, size);
 	    return current;
 	}
 	current = current->next;
