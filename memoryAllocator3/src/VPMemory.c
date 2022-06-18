@@ -104,7 +104,7 @@ void VPFree(void *pointer)
     }
 
     header_t *header = getMemoryHeader(pointer);
-
+    
     if (header == end)
     {
 	if (start == end)
@@ -202,9 +202,9 @@ void printList()
 
     while (current)
     {
-	printf("Current address: 0X%x\n", current);
-	printf("Next address: 0X%x\n", current->next);
-	printf("Adress of actual memory: 0X%x\n", (current + 1));
+	printf("Current address: %p\n", current);
+	printf("Next address: %p\n", current->next);
+	printf("Adress of actual memory: %p\n", (current + 1));
 	printf("Size of allocated memory after the  header in bytes: %d\n", current->size);
 	printf("Is this node free or not: %d\n\n", current->isFree);
 	current = current->next;
