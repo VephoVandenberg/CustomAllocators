@@ -27,7 +27,7 @@ header_t *end;
 header_t freeList[FREE_LIST_SIZE];
 
 void *VVMalloc(ui32 size);
-void VVFree();
+void VVFree(void *pointer);
 
 int main(int argc, char **argv)
 {
@@ -47,7 +47,7 @@ void *VVMalloc(ui32 size)
     return (header + 1);
 }
 
-void VVFree()
+void VVFree(void *pointer)
 {
     
 }
