@@ -11,13 +11,14 @@
 #define i64 long
 
 #define STACK_SIZE 64
-#define HEAP_SIZE 128
+#define HEAP_SIZE STACK_SIZE * 8
 
 typedef struct
 {
     ui8 stack[STACK_SIZE];
     ui8 heap[HEAP_SIZE];
-
+    ui8* heapBreak;
+    
     struct 
     {
 	ui8 *data;
@@ -28,11 +29,13 @@ typedef struct
 
 typedef struct
 {
-    unsigned int prev;
-    unsigned int next;
+    ui32 prev;
+    ui32 next;
 }header_t;
 
-static vm MainMemory;
+#define HEADER_SIZE sizeof(header_t)
+
+static vm VM;
 
 void *VVMalloc(ui32 size);
 void VVFree();
@@ -47,12 +50,32 @@ int main(int argc, char **argv)
 
 void test()
 {
-    
+    printf("%p\n", VM.heap);
+    VVMalloc(23);
+    printf("%p\n", VM.heapBreak);
 }
 
 void *VVMalloc(ui32 size)
 {
+    if (size <= 0)
+    {
+	return NULL;
+    }
     
+    void *header;
+    void *memory;
+    
+    if (!VM.heapBreak)
+    {
+	VM.heapBreak = VM.heap;
+    }
+
+    header = VM.heapBreak;
+    VM.heapBreak += HEADER_SIZE;
+    memory = VM.heapBreak;
+    VM.heapBreak += size;
+
+    return memory;
 }
 
 void VVFree()
