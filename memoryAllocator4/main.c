@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <unistd.h>
 
 #define ui8 unsigned char
 #define ui16 unsigned short
@@ -11,44 +10,52 @@
 #define i32 int
 #define i64 long
 
-typedef struct header
+#define STACK_SIZE 64
+#define HEAP_SIZE 128
+
+typedef struct
 {
-    ui8 isFree;
-    ui32 prevLen;
-    ui32 currLen;
-} header_t;
+    ui8 stack[STACK_SIZE];
+    ui8 heap[HEAP_SIZE];
 
-#define HEADER_SIZE sizeof(header_t)
-#defome FREE_LIST_SIZE 64
+    struct 
+    {
+	ui8 *data;
+	ui8 *bss;
+	ui8 *text;
+    }data_t;
+}vm;
 
-header_t *start;
-header_t *end;
+typedef struct
+{
+    unsigned int prev;
+    unsigned int next;
+}header_t;
 
-header_t freeList[FREE_LIST_SIZE];
+static vm MainMemory;
 
 void *VVMalloc(ui32 size);
-void VVFree(void *pointer);
+void VVFree();
+
+void test();
 
 int main(int argc, char **argv)
 {
+    test();
     return 0;
+}
+
+void test()
+{
+    
 }
 
 void *VVMalloc(ui32 size)
 {
-    void *header = sbrk(0);
-    void *memBlock = sbrk(size);
-
-    if (memBlock == (void *)(-1))
-    {
-	return NULL;
-    }
     
-    return (header + 1);
 }
 
-void VVFree(void *pointer)
+void VVFree()
 {
     
 }
-
