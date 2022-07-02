@@ -5,6 +5,8 @@
 #define ui32 unsigned int
 #define ui64 unsigned long
 
+#define bool ui8
+
 #define i8 char
 #define i16 short
 #define i32 int
@@ -12,6 +14,8 @@
 
 #define STACK_SIZE 64
 #define HEAP_SIZE STACK_SIZE * 8
+#define TRUE 1
+#define FALSE 0
 
 typedef struct
 {
@@ -27,15 +31,20 @@ typedef struct
     }data_t;
 }vm;
 
-typedef struct
+typedef struct node
 {
-    ui32 prev;
-    ui32 next;
+    struct node *prev;
+    struct node *next;
+    ui32 memSize;
+    bool isFree;
 }header_t;
 
 #define HEADER_SIZE sizeof(header_t)
 
 static vm VM;
+
+header_t *start;
+header_t *end;
 
 void *VVMalloc(ui32 size);
 void VVFree();
@@ -48,37 +57,74 @@ int main(int argc, char **argv)
     return 0;
 }
 
+header_t *findFreeBlock(size_t size);
+
+void printObjInfo(void *ptr)
+{
+    
+    printf("Heap base: %p\n", VM.heap);
+    printf("Variable address: %p\n", ptr);
+}
+
 void test()
 {
-    printf("%p\n", VM.heap);
-    VVMalloc(23);
-    printf("%p\n", VM.heapBreak);
+    int *var = VVMalloc(sizeof(ui32));
+    *var = 64;
+    printObjInfo(var);
 }
 
 void *VVMalloc(ui32 size)
 {
+    header_t *header;
+    
     if (size <= 0)
     {
 	return NULL;
     }
-    
-    void *header;
-    void *memory;
-    
-    if (!VM.heapBreak)
+    else if (!VM.heapBreak)
     {
 	VM.heapBreak = VM.heap;
+	header = VM.heapBreak;
+	header->prev = NULL;
+	header->next = NULL;
+	header->memSize = size;
+	header->isFree = FALSE;
+	return header + 1;
+    }
+    else if (VM.heapBreak + size >= HEAP_SIZE)
+    {
+	return NULL;
     }
 
-    header = VM.heapBreak;
-    VM.heapBreak += HEADER_SIZE;
-    memory = VM.heapBreak;
-    VM.heapBreak += size;
+    header = findFreeBlock(size);
 
-    return memory;
+    if (header)
+    {
+	header = VM.heapBreak;
+	header->isFree = FALSE;
+    }
+    else
+    {
+	header = VM.heapBreak;
+    }
 }
 
 void VVFree()
 {
     
+}
+
+header_t *findFreeBlock(size_t size)
+{
+    header_t *header = (header_t *)VM.heap;
+
+    while (header->next)
+    {
+	if (header->size >= size && header->isFree)
+	{
+	    return header;
+	}
+	header = header->next;
+    }
+    return NULL;
 }
