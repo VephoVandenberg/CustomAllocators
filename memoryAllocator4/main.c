@@ -17,20 +17,6 @@
 #define TRUE 1
 #define FALSE 0
 
-typedef struct
-{
-    ui8 stack[STACK_SIZE];
-    ui8 heap[HEAP_SIZE];
-    ui8* heapBreak;
-    
-    struct 
-    {
-	ui8 *data;
-	ui8 *bss;
-	ui8 *text;
-    }data_t;
-}vm;
-
 typedef struct node
 {
     struct node *prev;
@@ -39,12 +25,26 @@ typedef struct node
     bool isFree;
 }header_t;
 
+typedef struct
+{
+    ui8 stack[STACK_SIZE];
+    ui8 heap[HEAP_SIZE];
+    ui8* heapBreak;
+    
+    header_t *start;
+    header_t *end;
+
+    struct 
+    {
+	ui8 *data;
+	ui8 *bss;
+	ui8 *text;
+    }data_t;
+}vm;
+
 #define HEADER_SIZE sizeof(header_t)
 
 static vm VM;
-
-header_t *start;
-header_t *end;
 
 void *VVMalloc(ui32 size);
 void VVFree();
@@ -58,54 +58,32 @@ int main(int argc, char **argv)
 }
 
 header_t *findFreeBlock(size_t size);
-
-void printObjInfo(void *ptr)
-{
-    
-    printf("Heap base: %p\n", VM.heap);
-    printf("Variable address: %p\n", ptr);
-}
+header_t *requestMemory(size_t size);
 
 void test()
 {
     int *var = VVMalloc(sizeof(ui32));
     *var = 64;
-    printObjInfo(var);
+    
 }
 
 void *VVMalloc(ui32 size)
 {
-    header_t *header;
+    if (size)
+    {
+	return NULL;
+    }
     
-    if (size <= 0)
-    {
-	return NULL;
-    }
-    else if (!VM.heapBreak)
-    {
-	VM.heapBreak = VM.heap;
-	header = VM.heapBreak;
-	header->prev = NULL;
-	header->next = NULL;
-	header->memSize = size;
-	header->isFree = FALSE;
-	return header + 1;
-    }
-    else if (VM.heapBreak + size >= HEAP_SIZE)
-    {
-	return NULL;
-    }
-
-    header = findFreeBlock(size);
-
+    header_t *header = findFreeBlock(size);
     if (header)
     {
-	header = VM.heapBreak;
-	header->isFree = FALSE;
+	
     }
-    else
+
+    header = requestMemory(size);
+    if (!header)
     {
-	header = VM.heapBreak;
+	return NULL;
     }
 }
 
@@ -114,9 +92,51 @@ void VVFree()
     
 }
 
+header_t *requestMemory(size_t size)
+{
+    if ((VM.heapBreak - VM.heap) + HEADER_SIZE + size >= HEAP_SIZE)
+    {
+	return NULL;
+    }
+
+    header_t *header;
+    if (!VM.start)
+    {
+	VM.heapBreak = VM.heap;
+
+	header = VM.heap;	   
+	VM.start = header;
+	VM.end = VM.start;
+
+	VM.heapBreak += HEADER_SIZE + size;
+	
+	VM.start->next = NULL;
+	VM.start->prev = NULL;
+    }
+    else
+    {
+	header = VM.heapBreak;
+	if (VM.start == VM.end)
+	{
+	    VM.start->next = VM.end;
+	    VM.start->prev = NULL;
+	    
+	    VM.end->prev = VM.start;
+	    VM.end->next = NULL;
+	}
+	else
+	{
+	    endd
+	}
+    }
+    
+    header->memSize = size;
+    header->isFree = FALSE;
+}
+
 header_t *findFreeBlock(size_t size)
 {
-    header_t *header = (header_t *)VM.heap;
+    header_t *header = VM.start;
 
     while (header->next)
     {
